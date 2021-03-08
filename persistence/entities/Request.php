@@ -40,7 +40,7 @@ class Request {
         $to = $row['userEmail'];
         $subject = "Запрос на книгу {$row['title']}";
         // В письме сообщаем Email пользователя, который запросил книгу
-        $message = "Пользователь системы 'Домашняя библиотека' ({$this->userEmail}) просит Вас предоставить ему книгу {$row['author']}. {$row['title']}";
+        $message = "Пользователь системы 'CommonLib' ({$this->userEmail}) просит Вас предоставить ему книгу {$row['author']}. {$row['title']}";
         /* $headers = 'From: yurii@localhost' . "\r\n" .
           'Reply-To: yurii@localhost' . "\r\n" .
           'Content-type: text/plain; charset=UTF-8' . "\r\n" .
@@ -51,8 +51,7 @@ class Request {
           'X-Mailer: PHP/' . phpversion();
         return mail($to, $subject, $message, $headers);
       } else {
-        // 
-        return 'Book not found';
+        throw new Exception('Book not found');
       }
       
       /*// Получаем контекст для работы с БД
@@ -77,7 +76,7 @@ class Request {
       } else {
         return $e->getMessage();
       }*/
-      return $e->getMessage();
+      throw new Exception($e->getMessage());
     }
   }
   /* // Редактирование строки о книге по ее идентификатору
