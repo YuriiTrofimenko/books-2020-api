@@ -3,7 +3,7 @@
 // разрешающие ответы кросс-доменные запросы
 header("Access-Control-Allow-Headers: Content-Type");
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
 // Если в цепочке параметров запроса присутствует параметр 'controller'
 if (isset($_REQUEST['controller'])) {
   // Открываем блок перехвата исключений
