@@ -37,6 +37,24 @@ class Request {
       $resultCode = $ps->execute(["id"=>$this->bookId]);
       // Если такая книга найдена
       if ($resultCode && ($row = $ps->fetch())) {
+        // 1. Вставка строки о запросе на получение книги в БД
+        // Получаем контекст для работы с БД
+        $pdo = getDbContext();
+        // Готовим sql-запрос добавления строки в таблицу "Запросы"
+        $ps = $pdo->prepare("INSERT INTO `Requests` (`userEmail`, `bookId`) VALUES (:userEmail, :bookId)");
+        // Превращаем объект в массив
+        $ar = get_object_vars($this);
+        // Удаляем из него первые два элемента - id и created_at, потому что их создаст СУБД
+        array_shift($ar);
+        array_shift($ar);
+        // Выполняем запрос к БД для добавления записи
+        $ps->execute($ar);
+        // Добавление id, сгенерированного СУБД, в текущий объект сущности "Запрос"
+        $this->id = $pdo->lastInsertId();
+        $requestEntityArray = get_object_vars($this);
+        // 2. попытка уведомить пользователя книги о запросе на ее получение
+        // от другого пользователя
+        // Email текущего пользователя книги, на который нужно отправить письмо
         $to = $row['userEmail'];
         $subject = "Запрос на книгу {$row['title']}";
         // В письме сообщаем Email пользователя, который запросил книгу
@@ -45,29 +63,19 @@ class Request {
           'Reply-To: yurii@localhost' . "\r\n" .
           'Content-type: text/plain; charset=UTF-8' . "\r\n" .
           'X-Mailer: PHP/' . phpversion(); */
-        $headers = "From: {$this->userEmail}" . "\r\n" .
-          "Reply-To: {$row['userEmail']}" . "\r\n" .
+        $headers = "From: $this->userEmail" . "\r\n" .
+          "Reply-To: $to" . "\r\n" .
           'Content-type: text/plain; charset=UTF-8' . "\r\n" .
           'X-Mailer: PHP/' . phpversion();
-        return mail($to, $subject, $message, $headers);
+        try {
+          $requestEntityArray['isOwnerNotified'] = mail($to, $subject, $message, $headers);
+        } catch (\Throwable $th) {
+          //throw $th;
+        }
+        return $requestEntityArray;
       } else {
-        throw new Exception('Book not found');
+        throw new Exception('Книга не найдена');
       }
-      
-      /*// Получаем контекст для работы с БД
-      $pdo = getDbContext();
-      // Готовим sql-запрос добавления строки в таблицу "Книги"
-      $ps = $pdo->prepare("INSERT INTO `Requests` (`userId`, `title`, `author`, `genre`, `description`, `countryId`, `cityId`, `typeId`, `image`, `active`) VALUES (:userId, :title, :author, :genre, :description, :countryId, :cityId, :typeId, :image, :active)");
-      // Превращаем объект в массив
-      $ar = get_object_vars($this);
-      // Удаляем из него первые два элемента - id и created_at, потому что их создаст СУБД
-      array_shift($ar);
-      array_shift($ar);
-      // Выполняем запрос к БД для добавления записи
-      $ps->execute($ar);
-      //
-      $this->id = $pdo->lastInsertId();
-      return get_object_vars($this);*/
     } catch (PDOException $e) {
       /*// Если произошла ошибка - возвращаем ее текст
       $err = $e->getMessage();
