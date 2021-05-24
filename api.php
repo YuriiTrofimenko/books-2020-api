@@ -39,7 +39,15 @@ if (isset($_REQUEST['controller'])) {
         // расщепляем на отдельные аргументы,
         // передаем их в конструктор контроллера $controller
         // и вызываем на экземпляре контроллера действие по имени, хранящемся в переменной $action
-        $response->data = (new $controller(...array_values($args)))->$action();
+        try {
+          $response->data = (new $controller(...array_values($args)))->$action();
+        } catch (ArgumentCountError $e) {
+          // если в конструктор передано неправильное количество аргументов,
+          // выполняется попоытка вызова статического метода с передачей ему
+          // тех же аргументов, например, для метода изменения только ИД
+          // пользователя книги на новый
+          $response->data = $controller::$action($args);
+        }
       }
     } else {
       if (isset($_REQUEST['id'])) {

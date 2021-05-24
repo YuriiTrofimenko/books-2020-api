@@ -247,4 +247,23 @@ class Book {
       }
     }
   }
+
+  // Передача информации о книге новому пользователю:
+  // Изменение значения userId карточки книги на Id нового ее пользователя
+  // $args должен содержать:
+  // - currentUserId - ИД текущего пользователя, который нужно заменить - для ускорения поиска книги
+  // - bookId - ИД для поиска книги, которая передается
+  // - userId - ИД нового пользователя книги, который нужно установить
+  static function changeUser ($args) {
+    try {
+        // Получаем контекст для работы с БД
+        $pdo = getDbContext();
+        $currentUserId = $args['currentUserId'];
+        $bookId = $args['bookId'];
+        $userId = $args['userId'];
+        $pdo->exec("UPDATE `Books` SET `userId` = '$userId' WHERE `userId` = '$currentUserId' AND `id` = $bookId");
+    } catch (PDOException $e) {
+      throw new Exception($e->getMessage());
+    }
+  }
 }
