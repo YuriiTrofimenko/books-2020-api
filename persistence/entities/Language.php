@@ -28,11 +28,11 @@ class Language {
   } */
   // TODO применить, когда окружение для php8 будет готово
   function __construct(
-    protected string $name
-    , protected int $priority
-    , protected string $localeKey
-    , protected string $flagKey
-    , protected int $id = 0
+    string $name
+    , int $priority
+    , string $localeKey
+    , string $flagKey
+    , int $id = 0
     ) {}
   // вставка строки о языке в БД
   function create () {

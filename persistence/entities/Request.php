@@ -119,8 +119,8 @@ class Request {
       }
     }
   }*/
-  // Получение списка всех книг из БД
-  /*static function filter($args) {
+  // Получение списка всех запросов к данному владельцу книг из БД
+  static function filter($args) {
     // Переменная для подготовленного запроса
     $ps = null;
     // Переменная для результата запроса
@@ -132,25 +132,10 @@ class Request {
         $whereClouse = [];
         // Сбор условий запроса в массив
         if (isset($args['lastId'])) {
-          $whereClouse[] = "`b`.`id` < '{$args['lastId']}'";
+          $whereClouse[] = "`r`.`id` < '{$args['lastId']}'";
         }
         if (isset($args['userId'])) {
           $whereClouse[] = "`b`.`userId` = '{$args['userId']}'";
-        }
-        if (isset($args['active'])) {
-          $whereClouse[] = "`b`.`active` = '{$args['active']}'";
-        }
-        if (isset($args['search']) && $args['search']) {
-          $whereClouse[] = "((locate('{$args['search']}', `b`.`title`) > 0) OR (locate('{$args['search']}', `b`.`author`) > 0))";
-        }
-        if (isset($args['country']) && $args['country']->id) {
-          $whereClouse[] = "`b`.`countryId` = '{$args['country']->id}'";
-        }
-        if (isset($args['city']) && $args['city']->id) {
-          $whereClouse[] = "`b`.`cityId` = '{$args['city']->id}'";
-        }
-        if (isset($args['typeId'])) {
-          $whereClouse[] = "`b`.`typeId` = '{$args['typeId']}'";
         }
         $whereClouseString = 'WHERE ';
         $expressionCount = 0;
@@ -161,11 +146,11 @@ class Request {
             $whereClouseString .= ' AND ' . $expression;
           }
         }
-        // Готовим sql-запрос чтения всех строк данных из таблицы "Книги"
-        // с подключением связанных таблиц "Страна", "Город", "Тип",
+        // Готовим sql-запрос чтения всех строк данных из таблицы "Запросы"
+        // с подключением связанных таблиц: "Книги",
         // сортируем по идентификаторам,
-        // пытаемся получить только три значения из строк, идентификаторы которых меньше заданного
-        $ps = $pdo->prepare("SELECT `b`.`id`, `b`.`updatedAt`, `b`.`userId`, `b`.`title`, `b`.`author`, `b`.`genre`, `b`.`description`, `co`.`name` AS 'country', `ci`.`name` AS 'city', `ty`.`name` AS 'type', `b`.`image`, `b`.`active` FROM `Requests` AS `b` INNER JOIN `Country` AS `co` ON (`b`.`countryId` = `co`.`id`) INNER JOIN `City` AS `ci` ON (`b`.`cityId` = `ci`.`id`) INNER JOIN `Type` AS `ty` ON (`b`.`typeId` = `ty`.`id`) {$whereClouseString} ORDER BY `b`.`id` DESC LIMIT 3");
+        // пытаемся получить только десять значений из строк, идентификаторы которых меньше заданного
+        $ps = $pdo->prepare("SELECT `r`.`id`, `r`.`createdAt`, `r`.`bookId`, `r`.`userEmail`, IF(((`b`.`volumeOrIssue` IS NULL) OR (`b`.`volumeOrIssue` = '')), `b`.`title`, CONCAT(`b`.`title`, ' (', `b`.`volumeOrIssue`, ')')) AS 'bookName' FROM `Requests` AS `r` INNER JOIN `Books` AS `b` ON (`r`.`bookId` = `b`.`id`) {$whereClouseString} ORDER BY `r`.`createdAt` DESC LIMIT 10");
         // echo "SELECT `b`.`id`, `b`.`updatedAt`, `b`.`userId`, `b`.`title`, `b`.`author`, `b`.`genre`, `b`.`description`, `co`.`name` AS 'country', `ci`.`name` AS 'city', `ty`.`name` AS 'type', `b`.`image`, `b`.`active` FROM `Requests` AS `b` INNER JOIN `Country` AS `co` ON (`b`.`countryId` = `co`.`id`) INNER JOIN `City` AS `ci` ON (`b`.`cityId` = `ci`.`id`) INNER JOIN `Type` AS `ty` ON (`b`.`typeId` = `ty`.`id`) {$whereClouseString} ORDER BY `b`.`id` DESC LIMIT 3";
         // Выполняем
         $ps->execute();
@@ -176,5 +161,25 @@ class Request {
         echo $e->getMessage();
         return false;
     }
-  }*/
+  }
+  static function getCount ($userId) {
+    try {
+      // Получаем контекст для работы с БД
+      $pdo = getDbContext();
+      // Готовим sql-запрос удаления строки из таблицы "Requests"
+      $ps = $pdo->prepare("SELECT COUNT(*) AS `totalCount` FROM `Requests` AS `r` INNER JOIN `Books` AS `b` ON (`r`.`bookId` = `b`.`id`) WHERE `b`.`userId` = '$userId'");
+      // Выполняем
+      $ps->execute();
+      //Сохраняем полученные данные в ассоциативный массив
+      $count = $ps->fetch();
+      return $count;
+    } catch (PDOException $e) {
+      $err = $e->getMessage();
+      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
+        return 1062;
+      } else {
+        return $e->getMessage();
+      }
+    }
+  }
 }
