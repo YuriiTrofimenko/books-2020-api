@@ -38,13 +38,7 @@ class Country {
       }
       return get_object_vars($this);
     } catch (PDOException $e) {
-      // Если произошла ошибка - возвращаем ее текст
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Редактирование строки о стране по ее идентификатору
@@ -55,12 +49,7 @@ class Country {
       // Вставляем новую версию строки в БД
       $this->create();
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Удаление строки из БД по идентификатору
@@ -71,12 +60,7 @@ class Country {
       // Готовим sql-запрос удаления строки из таблицы  "Страна"
       $pdo->exec("DELETE FROM `Country` WHERE `id` = $id");
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Получение списка всех стран из БД
@@ -96,8 +80,7 @@ class Country {
         $countries = $ps->fetchAll();
         return $countries;
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return false;
+      throw new Exception($e->getMessage());
     }
   }
   // Получение списка стран из БД
@@ -122,8 +105,7 @@ class Country {
         }
         return $countries;
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return false;
+      throw new Exception($e->getMessage());
     }
   }
 }

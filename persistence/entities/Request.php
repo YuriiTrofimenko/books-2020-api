@@ -77,13 +77,6 @@ class Request {
         throw new Exception('Книга не найдена');
       }
     } catch (PDOException $e) {
-      /*// Если произошла ошибка - возвращаем ее текст
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }*/
       throw new Exception($e->getMessage());
     }
   }
@@ -158,8 +151,7 @@ class Request {
         $requests = $ps->fetchAll();
         return $requests;
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return false;
+      throw new Exception($e->getMessage());
     }
   }
   static function getCount ($userId) {
@@ -174,12 +166,7 @@ class Request {
       $count = $ps->fetch();
       return $count;
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
 }

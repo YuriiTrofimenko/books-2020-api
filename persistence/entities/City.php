@@ -44,13 +44,7 @@ class City {
       }
       return get_object_vars($this);
     } catch (PDOException $e) {
-      // Если произошла ошибка - возвращаем ее текст
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Редактирование строки о городе по ее идентификатору
@@ -61,12 +55,7 @@ class City {
       // Вставляем новую версию строки в БД
       $this->create();
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Удаление строки из БД по идентификатору
@@ -77,12 +66,7 @@ class City {
       // Готовим sql-запрос удаления строки из таблицы "Город"
       $pdo->exec("DELETE FROM `City` WHERE `id` = $id");
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Получение списка всех городов по идентификатору страны из БД
@@ -102,8 +86,7 @@ class City {
         $cities = $ps->fetchAll();
         return $cities;
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return false;
+      throw new Exception($e->getMessage());
     }
   }
 }

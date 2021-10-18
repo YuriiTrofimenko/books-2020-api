@@ -94,14 +94,6 @@ class Book {
       $ps = $pdo->prepare("SELECT `b`.`id`, `b`.`updatedAt`, `b`.`userId`, `b`.`userEmail`, `b`.`title`, `b`.`author`, `b`.`genre`, `b`.`publisher`, `b`.`volumeOrIssue`, `b`.`description`, `co`.`name` AS 'country', `ci`.`name` AS 'city', `ty`.`id` AS 'type', `b`.`language`, `b`.`publicationDate`, `b`.`image`, `b`.`active` FROM `Books` AS `b` INNER JOIN `Country` AS `co` ON (`b`.`countryId` = `co`.`id`) INNER JOIN `City` AS `ci` ON (`b`.`cityId` = `ci`.`id`) INNER JOIN `Type` AS `ty` ON (`b`.`typeId` = `ty`.`id`) WHERE `b`.`id` = {$this->id}");
       return ($ps->execute() && ($row = $ps->fetch())) ? $row : null;
     } catch (PDOException $e) {
-      // Если произошла ошибка - возвращаем ее текст
-      /* $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      } */
-      // return $e->getMessage();
       throw new Exception($e->getMessage());
     }
   }
@@ -113,12 +105,7 @@ class Book {
       // Вставляем новую версию строки в БД
       return $this->create();
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Удаление строки книги из БД по идентификатору
@@ -129,12 +116,7 @@ class Book {
       // Готовим sql-запрос удаления строки из таблицы "Книги"
       $pdo->exec("DELETE FROM `Books` WHERE `id` = $id");
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Получение списка всех книг из БД
@@ -158,12 +140,6 @@ class Book {
         if (isset($args['active'])) {
           $whereClouse[] = "`b`.`active` = '{$args['active']}'";
         }
-        /* if (isset($args['title'])) {
-          $whereClouse[] = "locate('{$args['title']}', `b`.`title`) > 0";
-        }
-        if (isset($args['author'])) {
-          $whereClouse[] = "locate('{$args['author']}', `b`.`author`) > 0";
-        } */
         if (isset($args['search']) && $args['search']) {
           $whereClouse[] = "((locate('{$args['search']}', `b`.`title`) > 0) OR (locate('{$args['search']}', `b`.`author`) > 0))";
         }
@@ -199,8 +175,7 @@ class Book {
         $books = $ps->fetchAll();
         return $books;
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return false;
+        throw new Exception($e->getMessage());
     }
   }
   // Получение строки книги из БД по идентификатору
@@ -209,19 +184,14 @@ class Book {
       // Получаем контекст для работы с БД
       $pdo = getDbContext();
       // Готовим sql-запрос удаления строки из таблицы "Книги"
-      $ps = $pdo->prepare("SELECT * FROM `Books` WHERE `id` = $id");
+      $ps = $pdo->prepare("SELECT `b`.`id`, `b`.`updatedAt`, `b`.`userId`, `b`.`userEmail`, `b`.`title`, `b`.`author`, `b`.`genre`, `b`.`publisher`, `b`.`volumeOrIssue`, `b`.`description`, `co`.`name` AS 'country', `ci`.`name` AS 'city', `ty`.`id` AS 'type', `b`.`language`, `b`.`publicationDate`, `b`.`image`, `b`.`active` FROM `Books` AS `b` INNER JOIN `Country` AS `co` ON (`b`.`countryId` = `co`.`id`) INNER JOIN `City` AS `ci` ON (`b`.`cityId` = `ci`.`id`) INNER JOIN `Type` AS `ty` ON (`b`.`typeId` = `ty`.`id`) WHERE `b`.`id` = $id");
       // Выполняем
       $ps->execute();
       //Сохраняем полученные данные в ассоциативный массив
       $book = $ps->fetch();
       return $book;
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
 
@@ -239,12 +209,7 @@ class Book {
       $book = $ps->fetch();
       return $book;
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
 

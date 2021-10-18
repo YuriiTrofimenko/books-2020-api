@@ -27,13 +27,7 @@ class Type {
       // Выполняем запрос к БД для добавления записи
       $ps->execute($ar);
     } catch (PDOException $e) {
-      // Если произошла ошибка - возвращаем ее текст
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Редактирование строки о типе книги по его идентификатору
@@ -44,12 +38,7 @@ class Type {
       // Вставляем новую версию строки в БД
       $this->create();
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Удаление строки из БД по идентификатору
@@ -60,12 +49,7 @@ class Type {
       // Готовим sql-запрос удаления строки из таблицы "Тип"
       $pdo->exec("DELETE FROM `Type` WHERE `id` = $id");
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Получение списка всех периодов из БД
@@ -85,8 +69,7 @@ class Type {
         $types = $ps->fetchAll();
         return $types;
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return false;
+        throw new Exception($e->getMessage());
     }
   }
 }

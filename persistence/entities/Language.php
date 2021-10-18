@@ -48,13 +48,7 @@ class Language {
       // Выполняем запрос к БД для добавления записи
       $ps->execute($ar);
     } catch (PDOException $e) {
-      // Если произошла ошибка - возвращаем ее текст
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Редактирование строки по идентификатору
@@ -65,12 +59,7 @@ class Language {
       // Вставляем новую версию строки в БД
       $this->create();
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Удаление строки из БД по идентификатору
@@ -81,12 +70,7 @@ class Language {
       // Готовим sql-запрос удаления строки из таблицы "Тип"
       $pdo->exec("DELETE FROM" . self::$TABLE_NAME . " WHERE `id` = $id");
     } catch (PDOException $e) {
-      $err = $e->getMessage();
-      if (substr($err, 0, strrpos($err, ":")) == 'SQLSTATE[23000]:Integrity constraint violation') {
-        return 1062;
-      } else {
-        return $e->getMessage();
-      }
+      throw new Exception($e->getMessage());
     }
   }
   // Получение списка всех языков из БД
@@ -106,8 +90,7 @@ class Language {
         $types = $ps->fetchAll();
         return $types;
     } catch (PDOException $e) {
-        echo $e->getMessage();
-        return false;
+      throw new Exception($e->getMessage());
     }
   }
 }
