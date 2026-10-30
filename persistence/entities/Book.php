@@ -109,7 +109,7 @@ class Book {
     }
   }
   // Удаление строки книги из БД по идентификатору
-  function delete ($id) {
+  static function delete ($id) {
     try {
       // Получаем контекст для работы с БД
       $pdo = getDbContext();
